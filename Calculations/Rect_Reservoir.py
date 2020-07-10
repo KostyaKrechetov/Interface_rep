@@ -6,7 +6,7 @@ from Calculations.Basic_Models import unit_fracture_func, unit_cylinder_source
 from Calculations.HOR_Well import f, F_b1_2, F_b2_2, F_b3_2
 
 #import timeit
-import Cy.pd_b2_2, Cy.unit_fracture_func
+
       
 tiny = 0.0000000001
 small = 1E-300
@@ -241,32 +241,39 @@ def pd_b1(S, yd, ywd, yed, xed, xbound, ybound, subtract_inf = True):
         Pd = 1 / 2 / u / xed * (exp(-u * abs(yd - ywd)) * (sbtr_inf + summ) + (signum * exp(-u * (yd + ywd)) + signum * exp(-u * (yed + yd2)) + exp(-u * (yed + yd1))) * (1 + summ))
     pd_b1 = Pd
     return pd_b1 
-
-
+    
+#%%
 
 def pd_b2_2(S, xd, xwd, xed, yd, ywd, yed, xbound, ybound, compl_type, subtract_inf = True):
-    # if compl_type == "line_source":
-    #     compl_type_b2 = "vert"
-    # else:
-    #     compl_type_b2 = compl_type
-    #
-    # summ = 0
-    # k = 1
-    #
-    # while True:
-    #     psum = 0
-    #     psumabs = 0
-    #     for i in range(1,PART_SUM_NUM+1):
-    #         add = pd_b2_k(k, S, xd, xwd, xed, yd, ywd, yed, xbound, ybound, compl_type_b2, subtract_inf)
-    #         psum = psum + add
-    #         psumabs = psumabs + abs(add)
-    #         k = k + 1
-    #
-    #     summ += psum
-    #     if not (abs(psumabs) / PART_SUM_NUM >= tiny * (abs(summ) + tiny) and k < MAXIT):
-    #         break
-    # return summ
-    return Cy.pd_b2_2.pd_b2_2(S, xd, xwd, xed, yd, ywd, yed, xbound, ybound, compl_type, subtract_inf = True)
+    
+    if compl_type == "line_source":
+        compl_type_b2 = "vert"
+    else:
+        compl_type_b2 = compl_type
+    #add1 = 1
+    summ = 0
+    k = 1
+    #large_k = False
+    
+    while True:
+        psum = 0
+        psumabs = 0
+        for i in range(1,PART_SUM_NUM+1):
+            add = pd_b2_k(k, S, xd, xwd, xed, yd, ywd, yed, xbound, ybound, compl_type_b2, subtract_inf)
+            psum = psum + add
+            psumabs = psumabs + abs(add)
+            # psumabs = psumabs + add
+            k = k + 1
+            #large_k = (k > 30)
+          
+        summ += psum
+        if not (abs(psumabs) / PART_SUM_NUM >= tiny * (abs(summ) + tiny) and k < MAXIT):
+            break
+        
+    pd_b2_2 = summ
+    return pd_b2_2
+
+#%%
 
 def pd_b3(S, xd, xwd, xed, yd, ywd, xbound, ybound, compl_type):
     
@@ -361,48 +368,50 @@ def pd_b3_BD(xd, xwd, xed, yd, ywd, xbound, compl_type):
     return pd_b3_BD
  
 #%%
-
 def pd_b2_k(k, S, xd, xwd, xed, yd, ywd, yed, xbound, ybound, compl_type, subtract_inf):
-    # if xbound == 'n':
-    #     part__1 = 2 / xed * cos(k * pi * xd / xed) * cos(k * pi * xwd / xed)
-    # elif xbound == "c":
-    #     part__1 = 2 / xed * sin(k * pi * xd / xed) * sin(k * pi * xwd / xed)
-    # else:
-    #     part__1 = 0
-    #
-    #
-    # if compl_type == "frac" :
-    #     # coefficient like 2/2 are remained to remember where they come from
-    #     part__1 = 2 / 2 * xed / pi / k * sin(k * pi / xed) * part__1
-    # elif compl_type == "vert":
-    #     part__1 = part__1
-    # else:
-    #     pd_b2_k = 0
-    #     return pd_b2_k
-    #
-    # if ybound == "n" :
-    #
-    #     signum = 1
-    # elif ybound == "c":
-    #     signum = -1
-    # else:
-    #     signum = 1
-    #
-    #
-    # if subtract_inf :
-    #     sbtr_inf = 0
-    # else:
-    #     sbtr_inf = 1
-    # ek =  sqrt(S + k ** 2 * pi ** 2 / xed ** 2)
-    #
-    # smexp = sumexp(ek, yed)
-    #
-    # part__2 = exp((-1)*ek * abs(yd - ywd)) * (sbtr_inf + smexp)+(signum * exp((-1)*ek * (yd + ywd)) + exp((-1)*ek * (2 * yed - abs(yd - ywd))) + signum * exp((-1)*ek * (2 * yed - (yd + ywd)))) * (1 + smexp)
-    #
-    # part__2 = 1/(2 * ek) * part__2
-    #
-    # return part__1 * part__2
-    return Cy.pd_b2_2.pd_b2_k(k, S, xd, xwd, xed, yd, ywd, yed, xbound, ybound, compl_type, subtract_inf)
+    
+    if xbound == 'n':
+        part__1 = 2 / xed * cos(k * pi * xd / xed) * cos(k * pi * xwd / xed)
+    elif xbound == "c":
+        
+        part__1 = 2 / xed * sin(k * pi * xd / xed) * sin(k * pi * xwd / xed)
+    else:
+        part__1 = 0
+    
+    
+    if compl_type == "frac" :
+        # coefficient like 2/2 are remained to remember where they come from
+        part__1 = 2 / 2 * xed / pi / k * sin(k * pi / xed) * part__1
+    elif compl_type == "vert":
+        part__1 = part__1
+    else:
+        pd_b2_k = 0
+        return pd_b2_k
+    
+    if ybound == "n" :
+       
+        signum = 1
+    elif ybound == "c":
+        signum = -1
+    else:
+        signum = 1
+  
+
+    if subtract_inf :
+        sbtr_inf = 0
+    else:
+        sbtr_inf = 1
+    ek =  sqrt(S + k ** 2 * pi ** 2 / xed ** 2)
+    
+    smexp = sumexp(ek, yed)
+                 
+    part__2 = exp((-1)*ek * abs(yd - ywd)) * (sbtr_inf + smexp)+(signum * exp((-1)*ek * (yd + ywd)) + exp((-1)*ek * (2 * yed - abs(yd - ywd))) + signum * exp((-1)*ek * (2 * yed - (yd + ywd)))) * (1 + smexp)
+              
+    part__2 = 1/(2 * ek) * part__2
+    
+    pd_b2_k = part__1 * part__2
+
+    return pd_b2_k 
 
 
 
@@ -410,24 +419,31 @@ def pd_b2_k(k, S, xd, xwd, xed, yd, ywd, yed, xbound, ybound, compl_type, subtra
     
 
 def pdb3_sub(k, S, xd, xwd, xed, yd, ywd, sgn1, sgn2, compl_type):
-#     # this is the unit source function
-#     xd1 = abs(xd + sgn1 * xwd + sgn2 * 2 * k * xed)
-#     yd1 = abs(yd - ywd)
-#
-#     if compl_type == "frac":
-#         Pd = unit_fracture_func(S, xd1, yd1)
-#     elif compl_type == "vert" :
-# #        We preffer to use cylinder source rather than line source
-# #        As it is exact solution for non-zero well radius
-# #        As if the skin-factor becomes negative (large modulus)
-# #        Effective wellbore radius becomes large
-#         rd = sqrt(xd1 ** 2 + yd1 ** 2)
-# #        Pd = unit_cylinder_source(S, rd)
-# #        Here is line source solution
-# #        Pd = unit_line_source(s, xd1)
-#         Pd = unit_cylinder_source(S, rd)
-#     return Pd
-    return Cy.unit_fracture_func.pdb3_sub(k, S, xd, xwd, xed, yd, ywd, sgn1, sgn2, compl_type)
+    
+    # this is the unit source function
+    
+    
+    xd1 = abs(xd + sgn1 * xwd + sgn2 * 2 * k * xed)
+    yd1 = abs(yd - ywd)
+    
+    if compl_type == "frac":
+        Pd = unit_fracture_func(S, xd1, yd1)
+    elif compl_type == "vert" :
+#        We preffer to use cylinder source rather than line source
+#        As it is exact solution for non-zero well radius
+#        As if the skin-factor becomes negative (large modulus)
+#        Effective wellbore radius becomes large
+        rd = sqrt(xd1 ** 2 + yd1 ** 2)
+#        Pd = unit_cylinder_source(S, rd)
+#        Here is line source solution
+#        Pd = unit_line_source(s, xd1)
+        Pd = unit_cylinder_source(S, rd)
+    pdb3_sub = Pd
+    return pdb3_sub
+
+
+#%%
+    
 
 def dpd_fincond_sf(S, cfd, sf, eta, Uniform_Flux):
 #   Here we calculate desuperposed additive to uniform flux fracture

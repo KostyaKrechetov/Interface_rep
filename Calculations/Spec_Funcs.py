@@ -1,31 +1,24 @@
 from math import factorial, atan, log,sin, pi, sqrt, tan, exp
 
 from numpy import sign
-
-import Cy.unit_fracture_func, Cy.pd_b2_2
-
 tiny = 1E-20
 gamma = 0.577215664901533
-
-
-
+#%%
 def sumexp(arg, yed):
-    # # exponential series summation
-    # summ = 0
-    # m = 0
-    # inc = (exp(-2 * yed * arg))
-    # while True:
-    #     m += 1
-    #     inc = exp(-2 * m * yed * arg)
-    #     summ = summ + inc
-    #     if not (inc > tiny * summ):
-    #         break
-    # #'Loop While (inc / (sum + 1E-50) >= tiny)
-    # sumexp = summ
-    # return sumexp
-    return Cy.pd_b2_2.sumexp(arg, yed)
-
-
+    # exponential series summation
+    summ = 0
+    m = 0
+    inc = (exp(-2 * yed * arg))
+    while True:
+        m += 1
+        inc = exp(-2 * m * yed * arg)
+        summ = summ + inc
+        if not (inc > tiny * summ):
+            break
+    #'Loop While (inc / (sum + 1E-50) >= tiny)
+    sumexp = summ
+    return sumexp
+#%%
 def l(x , sum_number = 100):
     # Calculates Lobachevskiy's function L(x) = int(ln(cos(t), t = 0..x)
     # Series for this function is L(x) = x * Ln(2) - 1 / 2 * sum((-1) ** (k - 1) * sin(2 * k * x) / k ** 2) , k=1..inf)
@@ -85,51 +78,50 @@ def L_m(u , sin2a ,sum_number = 100):
     return L_m
 
 #%%
-
+    
 def fast_ik0(x):
-    # tiny = 1E-17
-    # pi = 3.14159265358979
-    #
-    #
-    # if x <= 0:
-    #     fast_ik0 = 0
-    #     return fast_ik0
-    #
-    # if x > 18 :
-    #     fast_ik0 = pi * 0.5
-    #     return fast_ik0
-    #
-    # x2 = x * 0.5
-    # x2_k = 1
-    # kfct = 1
-    # part1 = 1
-    # part2 = 1
-    # part3 = 0
-    # k = 0
-    # sum1n = 0
-    # while True :
-    #    k = k + 1
-    #    kfct = kfct * k
-    #    x2_k = x2_k * x2
-    #    inc = x2_k / kfct
-    #    inc = inc * inc
-    #    div2k = 1 / (k + k + 1)
-    #    inc = inc * div2k
-    #    part1 +=  inc
-    #    part2 +=  inc * div2k
-    #    sum1n += 1 / k
-    #    part3 += inc * sum1n
-    #    if not ((30 * inc / part3) >= tiny):
-    #        break
-    #
-    # ans = -(log(x2) + gamma) * part1 * x
-    # ans = ans + part2 * x
-    # ans = ans + part3 * x
-    #
-    # fast_ik0 = ans
-    # return fast_ik0
-    return Cy.unit_fracture_func.fast_ik0(x)
-
+    tiny = 1E-17
+    pi = 3.14159265358979
+    
+    
+    if x <= 0:
+        fast_ik0 = 0
+        return fast_ik0
+    
+    if x > 18 :
+        fast_ik0 = pi * 0.5
+        return fast_ik0 
+    
+    x2 = x * 0.5
+    x2_k = 1
+    kfct = 1
+    part1 = 1
+    part2 = 1
+    part3 = 0
+    k = 0
+    sum1n = 0
+    while True :
+       k = k + 1
+       kfct = kfct * k
+       x2_k = x2_k * x2
+       inc = x2_k / kfct
+       inc = inc * inc
+       div2k = 1 / (k + k + 1)
+       inc = inc * div2k
+       part1 +=  inc
+       part2 +=  inc * div2k
+       sum1n += 1 / k
+       part3 += inc * sum1n
+       if not ((30 * inc / part3) >= tiny):
+           break
+    
+    ans = -(log(x2) + gamma) * part1 * x
+    ans = ans + part2 * x
+    ans = ans + part3 * x
+    
+    fast_ik0 = ans
+    return fast_ik0
+#%%
     
 def Coef(number_of_lapl_coeff):
     
@@ -169,16 +161,17 @@ def Coef(number_of_lapl_coeff):
 #%%
 
 def LU_(a,b,n):
-    a, indx = LU_decomposition(a,n)
-    b = LU_solve(a, b, indx, n)
+    a, indx, d = LU_decomposition(a,n)
+    b = LU_solve(a, b,indx, n)
     return a , b
 
 #%%
     
 
 def LU_decomposition(a,n):
-    vv = [0] * n
-    indx = [0] * n
+    vv = [0]*n
+    indx = [0]*n
+    d = 1
     for i in range(1,n+1):
         big = 0
         for j in range(1,n+1):
@@ -212,6 +205,7 @@ def LU_decomposition(a,n):
                 dum = a[imax-1][k-1]
                 a[imax-1][k-1] = a[j-1][k-1]
                 a[j-1][k-1] = dum
+            d = -d
             vv[imax-1] = vv[j-1]
         indx[j-1] = imax
         if a[j-1][j-1] == 0 :
@@ -220,9 +214,9 @@ def LU_decomposition(a,n):
             dum = 1 / a[j-1][j-1]
             for i in range(j+1,n+1):
                 a[i-1][j-1] = a[i-1][j-1] * dum
-    return a,indx
+    return a,indx,d             
            
-
+#%%
 
 def LU_solve(a,b,indx,n):
     ii = 0
@@ -348,8 +342,7 @@ def BesselK(x, n=0):
         BK = IKNA(n,x)
         BesselK = BK[n]
     return BesselK
-#%%]
-import timeit
+#%%
 def IK01A(x):
     # =========================================================
     # Purpose: Compute modified Bessel functions I0(x), I1(1),
@@ -386,7 +379,7 @@ def IK01A(x):
             BI0 = BI0 + r
             if (abs(r / BI0) < 0.000000000000001):
                 break
-
+        
         BI1 = 1
         r = 1
         for k in range(1,51):
@@ -454,7 +447,6 @@ def IK01A(x):
     DK1 = -BK0 - BK1 / x
     return BI0, DI0, BI1, DI1, BK0, DK0, BK1, DK1      
 #%%
-
 def IKNA(n, x, nm, BI, Di, BK, DK):
     
     #    ========================================================

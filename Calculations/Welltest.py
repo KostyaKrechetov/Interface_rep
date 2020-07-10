@@ -1,12 +1,13 @@
-import Calculations.Class
+from Calculations import Class
 from Calculations.Supporting_Funcs import ConvertUnits, DefineGeometry, DimensionlessVariables,DimensionlessGeometry
 from Calculations.Multifrac import multifrac_response_lapl
 from Calculations.Boundary_check import well_fits_rectangle
 from Calculations.Spec_Funcs import Coef
 from math import pi, log
 from Calculations.Rect_Reservoir import PD_Frac_Rect_Lapl, horizontal_rect_lapl, Pd_lapl_vert_U
-
-
+#from Multifrac_infinit_bound import multifrac_response_lapl_inf
+#import timeit
+#import pandas as pd
 def_eta_d  = 10000000
 def_wd = 0.00005
 Units = 1
@@ -66,15 +67,15 @@ def Pwf_Ql_Qt(t ,Regimes, delta_p = 100, regimes_flag = 1,  k = 10,
 
     #ReservoirModel = Class.Reservoir(reservoir_model) 
     
-    Well = Calculations.Class.WellModel(compl_type, xwd, ywd, zwd,rwd,
-                 skin,S_choke ,Fcd, def_eta_d, def_wd, Sfrac, n_frac)
+    Well = Class.WellModel(compl_type, xwd, ywd, zwd, rwd,
+                           skin, S_choke, Fcd, def_eta_d, def_wd, Sfrac, n_frac)
     
-    Boundary = Calculations.Class.Boundary(res_shape, xed, yed, zed, xbound,ybound)
+    Boundary = Class.Boundary(res_shape, xed, yed, zed, xbound, ybound)
    
     #WellBore = Class.Wellbore(WellBoreModel) #Cd,Cphi_d,storage_delta_t_d,
     
-    WellWork = Calculations.Class.WellWork(list_QP,list_QP_sl,list_QP_ft,list_work_td,regimes_flag,number_stages)
-    CalcParam = Calculations.Class.CalcParam(xd,yd,zd)
+    WellWork = Class.WellWork(list_QP, list_QP_sl, list_QP_ft, list_work_td, regimes_flag, number_stages)
+    CalcParam = Class.CalcParam(xd, yd, zd)
     
     
     Res = res_mult * PD_QD_QTD_U(td, WellWork, CalcParam, Well, Boundary)
